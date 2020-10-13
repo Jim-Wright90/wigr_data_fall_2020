@@ -1,0 +1,249 @@
+---
+title: "WIGR Data Fall 2020"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r setup 1, include=FALSE}
+library(tidyverse)
+library(rio)
+library(here)
+library(colorblindr)
+library(gghighlight)
+library(forcats)
+library(ggrepel)
+library(gt)
+library(knitr)
+library(kableExtra)
+library(reactable)
+library(plotly)
+library(SCVA)
+library(patchwork)
+
+
+theme_set(theme_minimal(15) +
+            theme(legend.position = "bottom",
+                  panel.grid.major.x = element_line(color = "gray60"),
+                  panel.grid.minor.x = element_blank(),
+                  panel.grid.major.y = element_blank())
+          )
+
+brief_self <- import(here("data", "WIGR_brief_self.xlsx"),
+               setclass = "tbl_df") 
+
+class_self_1 <- import(here("data", "WIGR_class_self_1.xlsx"),
+               setclass = "tbl_df") 
+
+class_self_2 <- import(here("data", "WIGR_class_self_2.xlsx"),
+               setclass = "tbl_df") 
+
+pcss <- import(here("data", "WIGR_pcss.xlsx"),
+               setclass = "tbl_df") 
+```
+
+## Consultation Questionnaires 
+
+### BRIEF-2 
+
+```{r, include=FALSE}
+head(brief_self)
+
+brief_self_tidy <- brief_self %>% 
+  pivot_longer(
+    cols = c(`Pre Treatment`, 
+             `Post Treatment`),
+    names_to = "Assessment",
+    values_to = "Response"
+  )
+
+head(brief_self_tidy)
+
+brief_scales <- c("Global Executive Composite",
+                  "Cognitive Regulation Index",
+                  "Task Completion Scale",
+                  "Plan/Organize Scale",
+                  "Working Memory Scale",
+                  "Emotional Regulation Index",
+                  "Emotional Control Scale",
+                  "Shift Scale",
+                  "Behavior Regulation Index",
+                  "Self-Monitor Scale",
+                  "Inhibit Scale")
+
+brief_self_tidy$Assessment <- factor(brief_self_tidy$Assessment, 
+                                     levels = c("Pre Treatment",
+                                                "Post Treatment"))
+
+brief_self_plot <- ggplot(brief_self_tidy, aes(`Scale/Index`, `Response`)) +
+  geom_line(aes(group = `Scale/Index`), color = "gray40") +
+  geom_point(aes(color = `Assessment`)) +
+  scale_color_OkabeIto() +
+  coord_flip() +
+  scale_x_discrete(limits = brief_scales) +
+  scale_y_continuous(limits = c(30, 90),
+                     breaks = c(30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90)) +
+  geom_text_repel(aes(label = `Response`)) +
+  theme(plot.title = element_text(color = "black", face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(color = "black", face = "bold")) +
+  labs(x = "",
+       y = "",
+       title = "BRIEF-2 Self-Report",
+       color = NULL,
+       subtitle = "Scores Greater than 65 are Considered Clinically Significant")
+
+brief_self_plot
+
+
+```
+
+
+```{r, include=TRUE, fig.height=8, fig.width=10}
+brief_self_plot
+```
+
+### CLASS {.tabset .tabset-fade .tabset-pills}
+
+```{r, include=FALSE}
+head(class_self_1)
+head(class_self_2)
+
+
+class_self_1_tidy <- class_self_1 %>% 
+  pivot_longer(
+    cols = c(`Pre Treatment`,
+             `Post Treatment`),
+    names_to = "Assessment",
+    values_to = "Response"
+  )
+
+class_1 <- c("Easily bothered by lights/screens or noise",
+             "Tiring easily during homework",
+             "Tiring easily during the school day",
+             "Headaches interfering with homework",
+             "Headaches interfering with classwork",
+             "Easily distracted during homework",
+             "Easily distracted during classwork",
+             "Trouble reading",
+             "Trouble remembering what was studied",
+             "Difficulty studying for tests or quizzes",
+             "Homework taking longer",
+             "In class, work taking longer",
+             "Difficulty understanding new material",
+             "Difficulty taking notes")
+
+class_1_resp <- c("A lot worse",
+                  "Somewhat worse",
+                  "A little worse",
+                  "Not worse")
+
+class_self_1_tidy$Assessment <- factor(class_self_1_tidy$Assessment,
+                                       levels = c("Pre Treatment",
+                                                  "Post Treatment"))
+
+class_self_1_plot <- ggplot(class_self_1_tidy, aes(`Question`, `Response`)) +
+  geom_line(aes(group = `Question`), color = "gray40") +
+  geom_point(aes(color = `Assessment`)) +
+  scale_color_OkabeIto() +
+  coord_flip() +
+  scale_x_discrete(limits = class_1) +
+  scale_y_discrete(limits = class_1_resp) +
+  theme(plot.title = element_text(color = "black", face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(color = "black", face = "bold")) +
+  labs(x = "",
+       y = "",
+       title = "CLASS Responses",
+       color = NULL,
+       subtitle = "Questions 1-14")
+
+class_self_1_plot
+
+class_self_2_tidy <- class_self_2 %>% 
+  pivot_longer(
+    cols = c(`Pre Treatment`,
+             `Post Treatment`),
+    names_to = "Assessment",
+    values_to = "Response"
+  )
+
+class_2 <- c("Stressed out about your grades dropping",
+             "More stressed out/overwhelmed with the schoolwork piling up",
+             "Not having enough support at home from parents/siblings",
+             "Not having enough support from teachers",
+             "Not being allowed to play sports/recreation",
+             "Missing time with friends and/or social activities")
+
+class_2_resp <- c("Very stressful",
+                  "Moderately stressful",
+                  "A little stressful",
+                  "Not stressful")
+
+class_self_2_tidy$Assessment <- factor(class_self_2_tidy$Assessment,
+                                       levels = c("Pre Treatment",
+                                                  "Post Treatment"))
+
+class_self_2_plot <- ggplot(class_self_2_tidy, aes(`Question`, `Response`)) +
+  geom_line(aes(group = `Question`), color = "gray40") +
+  geom_point(aes(color = `Assessment`)) +
+  scale_color_OkabeIto() +
+  coord_flip() +
+  scale_x_discrete(limits = class_2) +
+  scale_y_discrete(limits = class_2_resp) +
+  theme(plot.title = element_text(color = "black", face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(color = "black", face = "bold")) +
+  labs(x = "",
+       y = "",
+       title = "CLASS Responses",
+       color = NULL,
+       subtitle = "Questions 15-20")
+
+class_self_2_plot
+
+```
+
+#### CLASS 1
+
+```{r, include=TRUE, fig.height=8, fig.width=10}
+class_self_1_plot
+```
+
+#### CLASS 2
+
+```{r, include=TRUE, fig.height=8, fig.width=11}
+class_self_2_plot
+```
+
+### PCSS
+
+```{r, include=FALSE}
+head(pcss)
+
+pcss_table <- pcss %>% 
+  reactable(
+    columns = list(
+      Symptom = colDef(align = "center"),
+      `Pre Treatment` = colDef(name = "Pre Treatment",
+                                    align = "center"),
+      `Post Treatment` = colDef(name = "Post Treatment",
+                                align = "center")),
+    pagination = FALSE,
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    searchable = TRUE,
+    height = 600,
+    width = 500)
+```
+
+```{r pcss table, include=TRUE, fig.height=8}
+pcss_table
+```
